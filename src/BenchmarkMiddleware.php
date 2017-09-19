@@ -40,6 +40,8 @@ class BenchmarkMiddleware implements MiddlewareInterface
      */
     private $queue;
 
+    private $previousTime;
+
     private static $instance;
 
     public static function getInstance(string $tag = self::START_TAG, array $options = [])
@@ -67,9 +69,10 @@ class BenchmarkMiddleware implements MiddlewareInterface
             if ($benchOptions['options']['logger'] instanceof LoggerInterface) {
                 $logger = $benchOptions['options']['logger'];
                 $message = $benchOptions['tag'] . ' - ';
+                $previousTime = ( null === $this->previousTime ) ? microtime(true) : $this->previousTime;
 
                 if (isset($benchOptions['options']['time']) && $benchOptions['options']['time']) {
-                    $message .= 'time : ' . (microtime(true) - $benchOptions['time']) . ' - ';
+                    $message .= 'time : ' . ($previousTime - $benchOptions['time']) . ' - ';
                 }
 
                 if (isset($benchOptions['options']['memory']) && $benchOptions['options']['memory']) {
@@ -81,6 +84,7 @@ class BenchmarkMiddleware implements MiddlewareInterface
                 }
 
                 $message = rtrim($message, ' - ');
+                $this->previousTime = $benchOptions['time'];
 
                 if ('' !== trim($message)) {
                     $logger->info($message);
