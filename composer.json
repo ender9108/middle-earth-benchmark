@@ -1,6 +1,18 @@
 {
     "name": "enderlab/psr15-benchmark",
     "description": "Benchmark for middleware app",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alexandre Berthelot",
+            "email": "alexandre.berthelot@donzat.fr"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "EnderLab\\": "src/"
+        }
+    },
     "require": {
         "psr/http-message": "^1.0",
         "http-interop/http-middleware": "^0.4.0",
@@ -12,12 +24,5 @@
         "friendsofphp/php-cs-fixer": "^2.6",
         "satooshi/php-coveralls": "^1.0",
         "enderlab/psr15-middle-earth-framework": "^1.0"
-    },
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Alexandre Berthelot",
-            "email": "alexandre.berthelot@donzat.fr"
-        }
-    ]
+    }
 }
