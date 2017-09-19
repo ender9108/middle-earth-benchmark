@@ -19,7 +19,7 @@ class BenchmarkMiddlewareTest extends TestCase
                 'time'        => true,
                 'memory'      => true,
                 'memory_peak' => true,
-                'logger'      => null
+                'logger'      => new Logger('test')
             ]
         );
         $this->assertInstanceOf(BenchmarkMiddleware::class, $bench);
@@ -36,6 +36,7 @@ class BenchmarkMiddlewareTest extends TestCase
                 'logger'      => new Logger('test')
             ]
         );
+
         $request = new ServerRequest('GET', '/');
         $delegate = new Dispatcher();
         $response = $bench->process($request, $delegate);
