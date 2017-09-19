@@ -29,7 +29,7 @@ class BenchmarkMiddleware implements MiddlewareInterface
     /**
      * @var array
      */
-    private $options = [
+    private $defaultOptions = [
         'time'          => true,
         'memory'        => true,
         'memory_peak'   => true,
@@ -38,6 +38,11 @@ class BenchmarkMiddleware implements MiddlewareInterface
             'log_level' => LogLevel::DEBUG
         ]
     ];
+
+    /**
+     * @var array
+     */
+    private $options = [];
 
     /**
      * @var \SplQueue
@@ -62,6 +67,10 @@ class BenchmarkMiddleware implements MiddlewareInterface
      */
     public static function getInstance(string $tag = self::START_TAG, array $options = []): BenchmarkMiddleware
     {
+        if (null !== self::$instance) {
+            self::$instance->setFlagControl($tag, $options);
+        }
+
         if (null === self::$instance) {
             self::$instance = new self($tag, $options);
         }
@@ -90,7 +99,7 @@ class BenchmarkMiddleware implements MiddlewareInterface
 
                 $logger->log(
                     (
-                        isset($options['options']['logger']['log_level']) ?
+                    isset($options['options']['logger']['log_level']) ?
                         $options['options']['logger']['log_level'] :
                         LogLevel::DEBUG
                     ),
@@ -103,6 +112,23 @@ class BenchmarkMiddleware implements MiddlewareInterface
     }
 
     /**
+     * @param string $tag
+     * @param array $options
+     */
+    public function setFlagControl(string $tag, array $options = []): void
+    {
+        $this->mergeOptions($options);
+
+        $this->queue->enqueue([
+            'tag'         => $tag,
+            'options'     => $this->options,
+            'time'        => microtime(true),
+            'memory'      => memory_get_usage(),
+            'memory_peak' => memory_get_peak_usage()
+        ]);
+    }
+
+    /**
      * BenchmarkMiddleware constructor.
      *
      * @param string $tag
@@ -111,15 +137,7 @@ class BenchmarkMiddleware implements MiddlewareInterface
     private function __construct(string $tag = self::START_TAG, array $options = [])
     {
         $this->queue = new \SplQueue();
-        $options = $this->mergeOptions($options);
-
-        $this->queue->enqueue([
-            'tag'         => $tag,
-            'options'     => $options,
-            'time'        => microtime(true),
-            'memory'      => memory_get_usage(),
-            'memory_peak' => memory_get_peak_usage()
-        ]);
+        $this->setFlagControl($tag, $options);
     }
 
     /**
@@ -130,10 +148,9 @@ class BenchmarkMiddleware implements MiddlewareInterface
     private function buildMessage(array $options): string
     {
         $message = $options['tag'] . ' - ';
-        $previousTime = (null === $this->previousTime) ? microtime(true) : $this->previousTime;
 
         if (isset($options['options']['time']) && $options['options']['time']) {
-            $message .= 'time : ' . ($previousTime - $options['time']) . ' - ';
+            $message .= 'time : ' . (microtime(true) - $options['time']) . ' - ';
         }
 
         if (isset($options['options']['memory']) && $options['options']['memory']) {
@@ -145,7 +162,6 @@ class BenchmarkMiddleware implements MiddlewareInterface
         }
 
         $message = rtrim($message, ' - ');
-        $this->previousTime = $options['time'];
 
         return $message;
     }
@@ -169,16 +185,12 @@ class BenchmarkMiddleware implements MiddlewareInterface
      *
      * @return array
      */
-    private function mergeOptions(array $options): array
+    private function mergeOptions(array $options): void
     {
-        $mergedOptions = $this->options;
-
         foreach ($options as $key => $value) {
-            if (array_key_exists($key, $mergedOptions)) {
-                $mergedOptions[$key] = $value;
+            if (array_key_exists($key, $this->defaultOptions)) {
+                $this->options[$key] = $value;
             }
         }
-
-        return $mergedOptions;
     }
 }
