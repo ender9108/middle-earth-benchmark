@@ -12,7 +12,7 @@ use Psr\Log\LogLevel;
 class BenchmarkMiddleware implements MiddlewareInterface
 {
     /**
-     * @var string
+     * @var  string
      */
     const START_TAG = 'START';
 
