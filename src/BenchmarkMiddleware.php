@@ -7,6 +7,7 @@ use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 
 class BenchmarkMiddleware implements MiddlewareInterface
 {
@@ -29,10 +30,13 @@ class BenchmarkMiddleware implements MiddlewareInterface
      * @var array
      */
     private $options = [
-        'time'        => true,
-        'memory'      => true,
-        'memory_peak' => true,
-        'logger'      => null
+        'time'          => true,
+        'memory'        => true,
+        'memory_peak'   => true,
+        'logger'        => [
+            'instance'  => null,
+            'log_level' => LogLevel::DEBUG
+        ]
     ];
 
     /**
@@ -40,11 +44,23 @@ class BenchmarkMiddleware implements MiddlewareInterface
      */
     private $queue;
 
+    /**
+     * @var int
+     */
     private $previousTime;
 
+    /**
+     * @var BenchmarkMiddleware
+     */
     private static $instance;
 
-    public static function getInstance(string $tag = self::START_TAG, array $options = [])
+    /**
+     * @param string $tag
+     * @param array  $options
+     *
+     * @return BenchmarkMiddleware
+     */
+    public static function getInstance(string $tag = self::START_TAG, array $options = []): BenchmarkMiddleware
     {
         if (null === self::$instance) {
             self::$instance = new self($tag, $options);
@@ -64,37 +80,34 @@ class BenchmarkMiddleware implements MiddlewareInterface
         $response = $delegate->process($request);
 
         if (!$this->queue->isEmpty()) {
-            $benchOptions = $this->queue->dequeue();
+            $options = $this->queue->dequeue();
 
-            if ($benchOptions['options']['logger'] instanceof LoggerInterface) {
-                $logger = $benchOptions['options']['logger'];
-                $message = $benchOptions['tag'] . ' - ';
-                $previousTime = ( null === $this->previousTime ) ? microtime(true) : $this->previousTime;
+            if (isset($options['options']['logger']['instance']) &&
+                $options['options']['logger']['instance'] instanceof LoggerInterface
+            ) {
+                $logger = $options['options']['logger']['instance'];
+                $message = $this->buildMessage($options);
 
-                if (isset($benchOptions['options']['time']) && $benchOptions['options']['time']) {
-                    $message .= 'time : ' . ($previousTime - $benchOptions['time']) . ' - ';
-                }
-
-                if (isset($benchOptions['options']['memory']) && $benchOptions['options']['memory']) {
-                    $message .= 'memory : ' . $benchOptions['memory'] . ' - ';
-                }
-
-                if (isset($benchOptions['options']['memory_peak']) && $benchOptions['options']['memory_peak']) {
-                    $message .= 'memory peak : ' . $benchOptions['memory_peak'] . ' - ';
-                }
-
-                $message = rtrim($message, ' - ');
-                $this->previousTime = $benchOptions['time'];
-
-                if ('' !== trim($message)) {
-                    $logger->info($message);
-                }
+                $logger->log(
+                    (
+                        isset($options['options']['logger']['log_level']) ?
+                        $options['options']['logger']['log_level'] :
+                        LogLevel::DEBUG
+                    ),
+                    $message
+                );
             }
         }
 
         return $response;
     }
 
+    /**
+     * BenchmarkMiddleware constructor.
+     *
+     * @param string $tag
+     * @param array  $options
+     */
     private function __construct(string $tag = self::START_TAG, array $options = [])
     {
         $this->queue = new \SplQueue();
@@ -107,6 +120,48 @@ class BenchmarkMiddleware implements MiddlewareInterface
             'memory'      => memory_get_usage(),
             'memory_peak' => memory_get_peak_usage()
         ]);
+    }
+
+    /**
+     * @param array $options
+     *
+     * @return string
+     */
+    private function buildMessage(array $options): string
+    {
+        $message = $options['tag'] . ' - ';
+        $previousTime = (null === $this->previousTime) ? microtime(true) : $this->previousTime;
+
+        if (isset($options['options']['time']) && $options['options']['time']) {
+            $message .= 'time : ' . ($previousTime - $options['time']) . ' - ';
+        }
+
+        if (isset($options['options']['memory']) && $options['options']['memory']) {
+            $message .= 'memory : ' . $this->formatBytes($options['memory']) . ' - ';
+        }
+
+        if (isset($options['options']['memory_peak']) && $options['options']['memory_peak']) {
+            $message .= 'memory peak : ' . $this->formatBytes($options['memory_peak']) . ' - ';
+        }
+
+        $message = rtrim($message, ' - ');
+        $this->previousTime = $options['time'];
+
+        return $message;
+    }
+
+    /**
+     * @param int $size
+     * @param int $precision
+     *
+     * @return string
+     */
+    private function formatBytes(int $size, int $precision = 2): string
+    {
+        $base = log($size, 1024);
+        $suffixes = ['', 'K', 'M', 'G', 'T'];
+
+        return round(pow(1024, $base - floor($base)), $precision) . ' ' . $suffixes[floor($base)];
     }
 
     /**

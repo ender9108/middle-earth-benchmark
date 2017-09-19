@@ -8,6 +8,7 @@ use GuzzleHttp\Psr7\ServerRequest;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LogLevel;
 
 class BenchmarkMiddlewareTest extends TestCase
 {
@@ -19,7 +20,10 @@ class BenchmarkMiddlewareTest extends TestCase
                 'time'        => true,
                 'memory'      => true,
                 'memory_peak' => true,
-                'logger'      => new Logger('test')
+                'logger'      => [
+                    'instance'  => new Logger('test'),
+                    'log_level' => LogLevel::DEBUG
+                ]
             ]
         );
         $this->assertInstanceOf(BenchmarkMiddleware::class, $bench);
@@ -33,7 +37,10 @@ class BenchmarkMiddlewareTest extends TestCase
                 'time'        => true,
                 'memory'      => true,
                 'memory_peak' => true,
-                'logger'      => new Logger('test')
+                'logger'      => [
+                    'instance'  => new Logger('test'),
+                    'log_level' => LogLevel::DEBUG
+                ]
             ]
         );
 
