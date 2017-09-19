@@ -6,6 +6,7 @@ use Interop\Http\ServerMiddleware\DelegateInterface;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\LoggerInterface;
 
 class BenchmarkMiddleware implements MiddlewareInterface
 {
@@ -31,7 +32,7 @@ class BenchmarkMiddleware implements MiddlewareInterface
         'time'        => true,
         'memory'      => true,
         'memory_peak' => true,
-        'report_on'   => []
+        'logger'      => null
     ];
 
     /**
@@ -60,6 +61,33 @@ class BenchmarkMiddleware implements MiddlewareInterface
     {
         $response = $delegate->process($request);
 
+        if (!$this->queue->isEmpty()) {
+            $benchOptions = $this->queue->dequeue();
+
+            if ($benchOptions['options']['logger'] instanceof LoggerInterface) {
+                $logger = $benchOptions['options']['logger'];
+                $message = $benchOptions['tag'] . ' - ';
+
+                if (isset($benchOptions['options']['time']) && $benchOptions['options']['time']) {
+                    $message .= 'time : ' . (microtime(true) - $benchOptions['time']) . ' - ';
+                }
+
+                if (isset($benchOptions['options']['memory']) && $benchOptions['options']['memory']) {
+                    $message .= 'memory : ' . $benchOptions['memory'] . ' - ';
+                }
+
+                if (isset($benchOptions['options']['memory_peak']) && $benchOptions['options']['memory_peak']) {
+                    $message .= 'memory peak : ' . $benchOptions['memory_peak'] . ' - ';
+                }
+
+                $message = rtrim(' - ', $message);
+
+                if ('' !== trim($message)) {
+                    $logger->info($message);
+                }
+            }
+        }
+
         return $response;
     }
 
@@ -69,8 +97,11 @@ class BenchmarkMiddleware implements MiddlewareInterface
         $options = $this->mergeOptions($options);
 
         $this->queue->enqueue([
-            'tag'     => $tag,
-            'options' => $options
+            'tag'         => $tag,
+            'options'     => $options,
+            'time'        => microtime(true),
+            'memory'      => memory_get_usage(),
+            'memory_peak' => memory_get_peak_usage()
         ]);
     }
 
