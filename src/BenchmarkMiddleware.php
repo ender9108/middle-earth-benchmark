@@ -84,7 +84,7 @@ class BenchmarkMiddleware implements MiddlewareInterface
         $mergedOptions = $this->options;
 
         foreach ($options as $key => $value) {
-            if (array_key_exists($mergedOptions[$key])) {
+            if (array_key_exists($key, $mergedOptions)) {
                 $mergedOptions[$key] = $value;
             }
         }
