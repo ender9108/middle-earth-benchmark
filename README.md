@@ -17,7 +17,10 @@ $app->pipe(BenchmarkMiddleware::getInstance(
         'time'        => true, /* default true */ 
         'memory'      => true, /* default true */
         'memory_peak' => true, /* default true */
-        'logger'      => null  /* LoggerInterface default null */
+        'logger'      => [
+            'instance'  => new Logger('test'), /* LoggerInterface default null */
+            'log_level' => LogLevel::DEBUG     /* default LogLevel::DEBUG */
+        ]
     ]
 ));
 $app->pipe(/* Other middleware */);
