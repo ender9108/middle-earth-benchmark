@@ -4,3 +4,27 @@
 [![Coverage Status](https://coveralls.io/repos/github/ender9108/psr15-bencmark/badge.svg?branch=master)](https://coveralls.io/github/ender9108/psr15-bencmark?branch=master)
 
 Benchmark for middleware app
+
+## Get started
+
+```php
+<?php
+use \EnderLab\BenchmarkMiddleware;
+
+$app->pipe(BenchmarkMiddleware::getInstance(
+    BenchmarkMiddleware::START_TAG,
+    [
+        'time'        => true, /* default true */ 
+        'memory'      => true, /* default true */
+        'memory_peak' => true, /* default true */
+        'logger'      => null  /* LoggerInterface default null */
+    ]
+));
+$app->pipe(/* Other middleware */);
+$app->pipe(BenchmarkMiddleware::getInstance('FLAG1'));
+$app->pipe(/* Other middleware */);
+$app->pipe(/* Other middleware */);
+$app->pipe(BenchmarkMiddleware::getInstance(
+    BenchmarkMiddleware::END_TAG
+));
+```
