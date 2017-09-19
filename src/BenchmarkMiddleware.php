@@ -80,7 +80,7 @@ class BenchmarkMiddleware implements MiddlewareInterface
                     $message .= 'memory peak : ' . $benchOptions['memory_peak'] . ' - ';
                 }
 
-                $message = rtrim(' - ', $message);
+                $message = rtrim($message, ' - ');
 
                 if ('' !== trim($message)) {
                     $logger->info($message);
