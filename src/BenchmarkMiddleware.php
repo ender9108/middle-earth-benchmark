@@ -50,11 +50,6 @@ class BenchmarkMiddleware implements MiddlewareInterface
     private $queue;
 
     /**
-     * @var int
-     */
-    private $previousTime;
-
-    /**
      * @var BenchmarkMiddleware
      */
     private static $instance;
@@ -98,11 +93,9 @@ class BenchmarkMiddleware implements MiddlewareInterface
                 $message = $this->buildMessage($options);
 
                 $logger->log(
-                    (
-                    isset($options['options']['logger']['log_level']) ?
-                        $options['options']['logger']['log_level'] :
-                        LogLevel::DEBUG
-                    ),
+                    (isset($options['options']['logger']['log_level']) ?
+                    $options['options']['logger']['log_level'] :
+                    LogLevel::DEBUG),
                     $message
                 );
             }
@@ -113,7 +106,7 @@ class BenchmarkMiddleware implements MiddlewareInterface
 
     /**
      * @param string $tag
-     * @param array $options
+     * @param array  $options
      */
     public function setFlagControl(string $tag, array $options = []): void
     {
