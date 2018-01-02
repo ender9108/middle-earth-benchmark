@@ -22,11 +22,6 @@ class BenchmarkMiddleware implements MiddlewareInterface
     const END_TAG = 'END';
 
     /**
-     * @var string
-     */
-    const REPORT_ON_LOGGER = 'LOG';
-
-    /**
      * @var array
      */
     private $defaultOptions = [
