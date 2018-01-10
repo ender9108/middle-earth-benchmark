@@ -90,14 +90,14 @@ class BenchmarkMiddleware implements MiddlewareInterface
 
         if (!$this->queue->isEmpty()) {
             $options = $this->queue->dequeue();
-            $formatter = $this->buildFormatterInstance($options['benchmark.formatter']);
+            $formatter = $this->buildFormatterInstance($options['options']['benchmark.formatter']);
             $message = $formatter->format(
-                $options['benchmark.formatter']['template'],
+                $options['options']['benchmark.formatter']['template'],
                 $options['values']
             );
-            $logger = $this->buildLoggerInstance($options['benchmark.logger']);
+            $logger = $this->buildLoggerInstance($options['options']['benchmark.logger']);
             $logger->log(
-                $options['benchmark.logger']['log_level'],
+                $options['options']['benchmark.logger']['log_level'],
                 $message
             );
         }
@@ -115,6 +115,7 @@ class BenchmarkMiddleware implements MiddlewareInterface
 
         $this->queue->enqueue([
             'tag'                   => $tag,
+            'options'               => $this->options,
             'values'                => [
                 '{{{DATE}}}'        => date($this->options['benchmark.date.format']),
                 '{{{DATETIME}}}'    => date($this->options['benchmark.datetime.format']),
@@ -158,6 +159,9 @@ class BenchmarkMiddleware implements MiddlewareInterface
                 $this->options[$key] = $value;
             }
         }
+
+        print '<pre>';
+        print_r($this->options);
     }
 
     /**
