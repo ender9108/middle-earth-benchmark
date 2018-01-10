@@ -1,4 +1,5 @@
 <?php
+
 namespace EnderLab\Benchmark;
 
 use EnderLab\Benchmark\Formatter\MessageFormatter;
@@ -8,7 +9,6 @@ use Interop\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
 
 class BenchmarkMiddleware implements MiddlewareInterface
 {
@@ -64,7 +64,7 @@ class BenchmarkMiddleware implements MiddlewareInterface
      *
      * @return BenchmarkMiddleware
      */
-    public static function getInstance(string $tag = self::START_TAG, array $options = []): BenchmarkMiddleware
+    public static function getInstance(string $tag = self::START_TAG, array $options = []): self
     {
         if (null !== self::$instance) {
             self::$instance->setFlagControl($tag, $options);
@@ -78,8 +78,8 @@ class BenchmarkMiddleware implements MiddlewareInterface
     }
 
     /**
-     * @param ServerRequestInterface    $request
-     * @param RequestHandlerInterface   $requestHandler
+     * @param ServerRequestInterface  $request
+     * @param RequestHandlerInterface $requestHandler
      *
      * @return ResponseInterface
      */
@@ -148,8 +148,6 @@ class BenchmarkMiddleware implements MiddlewareInterface
 
     /**
      * @param array $options
-     *
-     * @return void
      */
     private function mergeOptions(array $options): void
     {
@@ -162,16 +160,17 @@ class BenchmarkMiddleware implements MiddlewareInterface
 
     /**
      * @param array $options
+     *
      * @return MessageFormatter
      */
-    private function buildFormatterInstance(array $options): MessageFormatter {
+    private function buildFormatterInstance(array $options): MessageFormatter
+    {
         $formatter = $options['instance'];
 
-        if (is_string($formatter) && false == class_exists($formatter)) {
+        if (is_string($formatter) && false === class_exists($formatter)) {
             throw new \InvalidArgumentException('');
-        } else {
-            $formatter = new $formatter();
         }
+        $formatter = new $formatter();
 
         if (!$formatter instanceof MessageFormatter) {
             throw new \InvalidArgumentException('Formatter must be implement MessageFormatter interface');
@@ -182,16 +181,17 @@ class BenchmarkMiddleware implements MiddlewareInterface
 
     /**
      * @param array $options
+     *
      * @return LoggerInterface
      */
-    private function buildLoggerInstance(array $options): LoggerInterface {
+    private function buildLoggerInstance(array $options): LoggerInterface
+    {
         $logger = $options['instance'];
 
-        if (is_string($logger) && false == class_exists($logger)) {
+        if (is_string($logger) && false === class_exists($logger)) {
             throw new \InvalidArgumentException('');
-        } else {
-            $logger = new $logger();
         }
+        $logger = new $logger();
 
         if (!$logger instanceof LoggerInterface) {
             throw new \InvalidArgumentException('Logger must be implement LoggerInterface interface');

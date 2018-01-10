@@ -1,8 +1,11 @@
 <?php
+
 namespace EnderLab\Benchmark\Formatter;
 
-final class ByteFormatter {
-    public static function format(int $size, int $precision = 2): string {
+final class ByteFormatter
+{
+    public static function format(int $size, int $precision = 2): string
+    {
         $base = log($size, 1024);
         $suffixes = ['', 'K', 'M', 'G', 'T'];
 
