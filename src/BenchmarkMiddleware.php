@@ -1,7 +1,7 @@
 <?php
+namespace EnderLab\Benchmark;
 
-namespace EnderLab;
-
+use EnderLab\Formatter\ByteFormatter;
 use Interop\Http\Server\MiddlewareInterface;
 use Interop\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -142,11 +142,11 @@ class BenchmarkMiddleware implements MiddlewareInterface
         }
 
         if (isset($options['options']['memory']) && $options['options']['memory']) {
-            $message .= 'memory : ' . $this->formatBytes($options['memory']) . ' - ';
+            $message .= 'memory : ' . ByteFormatter::format($options['memory']) . ' - ';
         }
 
         if (isset($options['options']['memory_peak']) && $options['options']['memory_peak']) {
-            $message .= 'memory peak : ' . $this->formatBytes($options['memory_peak']) . ' - ';
+            $message .= 'memory peak : ' . ByteFormatter::format($options['memory_peak']) . ' - ';
         }
 
         $message = rtrim($message, ' - ');
@@ -155,23 +155,9 @@ class BenchmarkMiddleware implements MiddlewareInterface
     }
 
     /**
-     * @param int $size
-     * @param int $precision
-     *
-     * @return string
-     */
-    private function formatBytes(int $size, int $precision = 2): string
-    {
-        $base = log($size, 1024);
-        $suffixes = ['', 'K', 'M', 'G', 'T'];
-
-        return round(pow(1024, $base - floor($base)), $precision) . ' ' . $suffixes[floor($base)];
-    }
-
-    /**
      * @param array $options
      *
-     * @return array
+     * @return void
      */
     private function mergeOptions(array $options): void
     {
