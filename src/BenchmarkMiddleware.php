@@ -143,6 +143,7 @@ class BenchmarkMiddleware implements MiddlewareInterface
     private function __construct(string $tag = self::START_TAG, array $options = [])
     {
         $this->queue = new \SplQueue();
+        $this->options = $this->defaultOptions;
         $this->setFlagControl($tag, $options);
     }
 
