@@ -4,6 +4,7 @@ namespace EnderLab\Benchmark;
 
 use EnderLab\Benchmark\Formatter\MessageFormatter;
 use EnderLab\Benchmark\Formatter\TimeFormatter;
+use EnderLab\Benchmark\Formatter\ByteFormatter;
 use Interop\Http\Server\MiddlewareInterface;
 use Interop\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
