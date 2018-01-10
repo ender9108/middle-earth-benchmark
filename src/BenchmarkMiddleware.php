@@ -1,7 +1,8 @@
 <?php
 namespace EnderLab\Benchmark;
 
-use EnderLab\Formatter\ByteFormatter;
+use EnderLab\Benchmark\Formatter\MessageFormatter;
+use EnderLab\Benchmark\Formatter\TimeFormatter;
 use Interop\Http\Server\MiddlewareInterface;
 use Interop\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -25,12 +26,20 @@ class BenchmarkMiddleware implements MiddlewareInterface
      * @var array
      */
     private $defaultOptions = [
-        'time'          => true,
-        'memory'        => true,
-        'memory_peak'   => true,
-        'logger'        => [
-            'instance'  => null,
-            'log_level' => LogLevel::DEBUG
+        'benchmark.time.format'     => [
+            'format'                => TimeFormatter::SECOND,
+            'precision'             => 2
+        ],
+        'benchmark.date.format'     => 'Y-m-d',
+        'benchmark.datetime.format' => 'Y-m-d H:i:s',
+        'benchmark.byte.precision'  => 2,
+        'benchmark.logger'          => [
+            'instance'              => null,
+            'log_level'             => null
+        ],
+        'benchmark.formatter'       => [
+            'instance'              => 'EnderLab\\Benchmark\\Formatter\\DefaultMessageFormatter',
+            'template'              => '{{{DATETIME}}} - time : {{{TIME}}} - memory : {{{MEMORY}}} (peak {{{MEMORY_PEAK}}})'
         ]
     ];
 
@@ -80,20 +89,16 @@ class BenchmarkMiddleware implements MiddlewareInterface
 
         if (!$this->queue->isEmpty()) {
             $options = $this->queue->dequeue();
-
-            if (isset($options['options']['logger']['instance']) &&
-                $options['options']['logger']['instance'] instanceof LoggerInterface
-            ) {
-                $logger = $options['options']['logger']['instance'];
-                $message = $this->buildMessage($options);
-
-                $logger->log(
-                    (isset($options['options']['logger']['log_level']) ?
-                    $options['options']['logger']['log_level'] :
-                    LogLevel::DEBUG),
-                    $message
-                );
-            }
+            $formatter = $this->buildFormatterInstance($options['benchmark.formatter']);
+            $message = $formatter->format(
+                $options['benchmark.formatter']['template'],
+                $options['values']
+            );
+            $logger = $this->buildLoggerInstance($options['benchmark.logger']);
+            $logger->log(
+                $options['benchmark.logger']['log_level'],
+                $message
+            );
         }
 
         return $response;
@@ -108,11 +113,24 @@ class BenchmarkMiddleware implements MiddlewareInterface
         $this->mergeOptions($options);
 
         $this->queue->enqueue([
-            'tag'         => $tag,
-            'options'     => $this->options,
-            'time'        => microtime(true),
-            'memory'      => memory_get_usage(),
-            'memory_peak' => memory_get_peak_usage()
+            'tag'                   => $tag,
+            'values'                => [
+                '{{{DATE}}}'        => date($this->options['benchmark.date.format']),
+                '{{{DATETIME}}}'    => date($this->options['benchmark.datetime.format']),
+                '{{{TIME}}}'        => TimeFormatter::format(
+                    microtime(true),
+                    $this->options['benchmark.time.format']['format'],
+                    $this->options['benchmark.time.format']['precision']
+                ),
+                '{{{MEMORY}}}'      => ByteFormatter::format(
+                    memory_get_usage(),
+                    $this->options['benchmark.byte.precision']
+                ),
+                '{{{MEMORY_PEAK}}}' => ByteFormatter::format(
+                    memory_get_peak_usage(),
+                    $this->options['benchmark.byte.precision']
+                )
+            ]
         ]);
     }
 
@@ -131,32 +149,6 @@ class BenchmarkMiddleware implements MiddlewareInterface
     /**
      * @param array $options
      *
-     * @return string
-     */
-    private function buildMessage(array $options): string
-    {
-        $message = $options['tag'] . ' - ';
-
-        if (isset($options['options']['time']) && $options['options']['time']) {
-            $message .= 'time : ' . (microtime(true) - $options['time']) . ' - ';
-        }
-
-        if (isset($options['options']['memory']) && $options['options']['memory']) {
-            $message .= 'memory : ' . ByteFormatter::format($options['memory']) . ' - ';
-        }
-
-        if (isset($options['options']['memory_peak']) && $options['options']['memory_peak']) {
-            $message .= 'memory peak : ' . ByteFormatter::format($options['memory_peak']) . ' - ';
-        }
-
-        $message = rtrim($message, ' - ');
-
-        return $message;
-    }
-
-    /**
-     * @param array $options
-     *
      * @return void
      */
     private function mergeOptions(array $options): void
@@ -166,5 +158,45 @@ class BenchmarkMiddleware implements MiddlewareInterface
                 $this->options[$key] = $value;
             }
         }
+    }
+
+    /**
+     * @param array $options
+     * @return MessageFormatter
+     */
+    private function buildFormatterInstance(array $options): MessageFormatter {
+        $formatter = $options['instance'];
+
+        if (is_string($formatter) && false == class_exists($formatter)) {
+            throw new \InvalidArgumentException('');
+        } else {
+            $formatter = new $formatter();
+        }
+
+        if (!$formatter instanceof MessageFormatter) {
+            throw new \InvalidArgumentException('Formatter must be implement MessageFormatter interface');
+        }
+
+        return $formatter;
+    }
+
+    /**
+     * @param array $options
+     * @return LoggerInterface
+     */
+    private function buildLoggerInstance(array $options): LoggerInterface {
+        $logger = $options['instance'];
+
+        if (is_string($logger) && false == class_exists($logger)) {
+            throw new \InvalidArgumentException('');
+        } else {
+            $logger = new $logger();
+        }
+
+        if (!$logger instanceof LoggerInterface) {
+            throw new \InvalidArgumentException('Logger must be implement LoggerInterface interface');
+        }
+
+        return $logger;
     }
 }

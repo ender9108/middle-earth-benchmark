@@ -1,5 +1,5 @@
 <?php
-namespace EnderLab\Benchmark;
+namespace EnderLab\Benchmark\Formatter;
 
 final class ByteFormatter {
     public static function format(int $size, int $precision = 2): string {
