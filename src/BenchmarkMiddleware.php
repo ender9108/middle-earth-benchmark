@@ -175,8 +175,9 @@ class BenchmarkMiddleware implements MiddlewareInterface
 
         if (is_string($formatter) && false === class_exists($formatter)) {
             throw new \InvalidArgumentException('');
+        } else {
+            $formatter = new $formatter();
         }
-        $formatter = new $formatter();
 
         if (!$formatter instanceof MessageFormatter) {
             throw new \InvalidArgumentException('Formatter must be implement MessageFormatter interface');
@@ -193,11 +194,6 @@ class BenchmarkMiddleware implements MiddlewareInterface
     private function buildLoggerInstance(array $options): LoggerInterface
     {
         $logger = $options['instance'];
-
-        if (is_string($logger) && false === class_exists($logger)) {
-            throw new \InvalidArgumentException('');
-        }
-        $logger = new $logger();
 
         if (!$logger instanceof LoggerInterface) {
             throw new \InvalidArgumentException('Logger must be implement LoggerInterface interface');
