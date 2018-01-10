@@ -159,9 +159,6 @@ class BenchmarkMiddleware implements MiddlewareInterface
                 $this->options[$key] = $value;
             }
         }
-
-        print '<pre>';
-        print_r($this->options);
     }
 
     /**
