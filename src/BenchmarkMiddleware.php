@@ -86,7 +86,7 @@ class BenchmarkMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $requestHandler): ResponseInterface
     {
-        $response = $requestHandler->process($request);
+        $response = $requestHandler->handle($request);
 
         if (!$this->queue->isEmpty()) {
             $options = $this->queue->dequeue();
