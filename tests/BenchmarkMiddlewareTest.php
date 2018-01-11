@@ -2,7 +2,7 @@
 
 namespace Tests\EnderLab;
 
-use EnderLab\BenchmarkMiddleware;
+use EnderLab\Benchmark\BenchmarkMiddleware;
 use EnderLab\Dispatcher\Dispatcher;
 use GuzzleHttp\Psr7\ServerRequest;
 use Monolog\Logger;
@@ -17,12 +17,9 @@ class BenchmarkMiddlewareTest extends TestCase
         $bench = BenchmarkMiddleware::getInstance(
             BenchmarkMiddleware::START_TAG,
             [
-                'time'        => true,
-                'memory'      => true,
-                'memory_peak' => true,
-                'logger'      => [
-                    'instance'  => new Logger('test'),
-                    'log_level' => LogLevel::DEBUG
+                'benchmark.logger'  => [
+                    'instance'      => new Logger('test'),
+                    'log_level'     => LogLevel::DEBUG
                 ]
             ]
         );
@@ -34,12 +31,9 @@ class BenchmarkMiddlewareTest extends TestCase
         $bench = BenchmarkMiddleware::getInstance(
             BenchmarkMiddleware::START_TAG,
             [
-                'time'        => true,
-                'memory'      => true,
-                'memory_peak' => true,
-                'logger'      => [
-                    'instance'  => new Logger('test'),
-                    'log_level' => LogLevel::DEBUG
+                'benchmark.logger'  => [
+                    'instance'      => new Logger('test'),
+                    'log_level'     => LogLevel::DEBUG
                 ]
             ]
         );

@@ -2,9 +2,9 @@
 
 namespace EnderLab\Benchmark;
 
+use EnderLab\Benchmark\Formatter\ByteFormatter;
 use EnderLab\Benchmark\Formatter\MessageFormatter;
 use EnderLab\Benchmark\Formatter\TimeFormatter;
-use EnderLab\Benchmark\Formatter\ByteFormatter;
 use Interop\Http\Server\MiddlewareInterface;
 use Interop\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -171,10 +171,9 @@ class BenchmarkMiddleware implements MiddlewareInterface
         $formatter = $options['instance'];
 
         if (is_string($formatter) && false === class_exists($formatter)) {
-            throw new \InvalidArgumentException('');
-        } else {
-            $formatter = new $formatter();
+            throw new \InvalidArgumentException('Class "' . $formatter . '" not found');
         }
+        $formatter = new $formatter();
 
         if (!$formatter instanceof MessageFormatter) {
             throw new \InvalidArgumentException('Formatter must be implement MessageFormatter interface');
