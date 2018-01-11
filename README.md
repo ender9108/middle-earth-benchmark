@@ -14,12 +14,20 @@ use \EnderLab\BenchmarkMiddleware;
 $app->pipe(BenchmarkMiddleware::getInstance(
     BenchmarkMiddleware::START_TAG,
     [
-        'time'        => true, /* default true */ 
-        'memory'      => true, /* default true */
-        'memory_peak' => true, /* default true */
-        'logger'      => [
-            'instance'  => new Logger('test'), /* LoggerInterface default null */
-            'log_level' => LogLevel::DEBUG     /* default LogLevel::DEBUG */
+        'benchmark.time.format'     => [
+            'format'                => TimeFormatter::SECOND,
+            'precision'             => 2
+        ],
+        'benchmark.date.format'     => 'Y-m-d',
+        'benchmark.datetime.format' => 'Y-m-d H:i:s',
+        'benchmark.byte.precision'  => 2,
+        'benchmark.logger'          => [
+            'instance'              => new Logger('test'), /* LoggerInterface default null */
+            'log_level'             => LogLevel::DEBUG     /* default LogLevel::DEBUG */
+        ],
+        'benchmark.formatter'       => [
+            'instance'              => 'EnderLab\\Benchmark\\Formatter\\DefaultMessageFormatter',
+            'template'              => '{{{DATETIME}}} - time : {{{TIME}}} - memory : {{{MEMORY}}} (peak {{{MEMORY_PEAK}}})'
         ]
     ]
 ));
