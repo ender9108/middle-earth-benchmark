@@ -1,7 +1,7 @@
 # psr15-benchmark
 
-[![Build Status](https://travis-ci.org/ender9108/psr15-benchmark.svg?branch=master)](https://travis-ci.org/ender9108/psr15-bencmark)
-[![Coverage Status](https://coveralls.io/repos/github/ender9108/psr15-bencmark/badge.svg?branch=master)](https://coveralls.io/github/ender9108/psr15-bencmark?branch=master)
+[![Build Status](https://travis-ci.org/ender9108/middle-earth-benchmark.svg?branch=master)](https://travis-ci.org/ender9108/middle-earth-benchmark)
+[![Coverage Status](https://coveralls.io/repos/github/ender9108/middle-earth-benchmark/badge.svg?branch=master)](https://coveralls.io/github/ender9108/middle-earth-benchmark?branch=master)
 
 Benchmark for middleware app
 
