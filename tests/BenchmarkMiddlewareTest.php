@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\EnderLab;
+namespace Tests\EnderLab\Benchmark;
 
 use EnderLab\Benchmark\BenchmarkMiddleware;
 use EnderLab\Dispatcher\Dispatcher;
@@ -42,5 +42,13 @@ class BenchmarkMiddlewareTest extends TestCase
         $delegate = new Dispatcher();
         $response = $bench->process($request, $delegate);
         $this->assertInstanceOf(ResponseInterface::class, $response);
+    }
+}
+
+class InvalidFormatter
+{
+    public function format(string $template, array $params): string
+    {
+        return strtr($template, $params);
     }
 }
